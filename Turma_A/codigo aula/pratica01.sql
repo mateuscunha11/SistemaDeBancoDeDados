@@ -236,6 +236,28 @@ HAVING
 ORDER BY
     venda_id;  
 
+-- QUESTÃO 1
+-- As colunas que repetem informações da venda são: venda_id, data_venda e bairro_entrega.
+-- As que repetem informações do produto são: produto_id, produto_nome, categoria e unidade.
+-- O valor_unitario é diferente porque pode mudar conforme a venda, mesmo sendo o mesmo produto.
+-- Se o nome fosse alterado em algumas linhas, as consultas poderiam considerar o mesmo produto como produtos diferentes, gerando resultados incorretos.
+
+
+-- QUESTÃO 2
+-- Uma regra que a tabela não garante é que o produto_id deve sempre estar ligado ao mesmo produto.
+-- Exemplo de INSERT aceito:
+-- INSERT INTO itens_venda (produto_id, produto_nome) VALUES (5, 'Banana');
+-- Outra regra não garantida é que uma mesma venda tenha sempre os mesmos dados de data e entrega.
+
+
+-- QUESTÃO 3
+-- A média ponderada do morango é menor que a média simples porque as maiores
+-- quantidades foram vendidas com valores unitários menores, tendo mais peso no cálculo.
+-- A média ponderada do abacaxi é maior porque as maiores quantidades foram
+-- vendidas com valores unitários maiores, aumentando o resultado.
+-- As médias do cheiro-verde são iguais porque todos os valores unitários
+-- considerados têm o mesmo valor, então a quantidade não altera a média.
+
 
 
 
