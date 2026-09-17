@@ -1,4 +1,4 @@
--- Active: 1789597700954@@127.0.0.1@5432@bd_hortifruti
+-- Active: 1789665385555@@127.0.0.1@5432@bd_hortifruti@public
 
 
 DROP TABLE IF EXISTS itens_venda;
@@ -6,18 +6,18 @@ DROP TABLE IF EXISTS itens_venda;
 
 CREATE TABLE itens_venda(
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    venda_id INTEGER GENERATED ALWAYS AS IDENTITY,
+    venda_id INTEGER NOT NULL,
     data_venda DATE NOT NULL,
-    bairro_entrega TEXT,
-    produto_id INTEGER GENERATED ALWAYS AS IDENTITY,
+    bairro_entrega TEXT, --texto e pode ser null pois so é usado se haver entrega
+    produto_id INTEGER NOT NULL,
     produto_nome TEXT NOT NULL,
     categoria TEXT NOT NULL,
-    unidade INTEGER NOT NULL,
-    quantidade INTEGER NOT NULL,
-    valor_unitario NUMERIC 
+    unidade TEXT NOT NULL,
+    quantidade NUMERIC(10, 2) NOT NULL, -- no texto diz que os vendido por unidade tem inteira,mas os outros necessitam da virgula pra ficar mais exato
+    valor_unitario NUMERIC (10, 2) NOT NULL -- no texto diz que guarda reais e centavos
     );
 
-    CREATE DATABASE bd_hortifruti;
+    -- CREATE DATABASE bd_hortifruti;
 
     
     INSERT INTO itens_venda
@@ -64,6 +64,181 @@ VALUES-- 2026-08-03, segunda-feira
 (3015, '2026-08-08', NULL,        6, 'Batata',        'Legume',  'Kg',  1.250, 5.49),
 (3016, '2026-08-08', NULL,        5, 'Tomate',        'Legume',  'Kg',  1.115, 8.99),
 (3016, '2026-08-08', NULL,        7, 'Batata-doce',   'Legume',  'Kg',  1.360, 4.79);
+
+INSERT INTO itens_venda 
+(venda_id, data_venda, bairro_entrega, produto_id, produto_nome, categoria, unidade, quantidade, valor_unitario) 
+VALUES
+(3017, '08-08-2026' , NULL, 5, 'Tomate', 'Legume', 'Kg', 1.340, 8.99),
+(3017, '08-08-2026', NULL, 10, 'Alface crespa', 'Verdura', 'UN', 2, 3.49),
+(3017, '08-08-2026', NULL, 4, 'Morango', 'Fruta', 'UN', 1, 9.90)
+
+SELECT * FROM itens_venda
+
+-- Consulta 1
+SELECT DISTINCT
+    venda_id,
+    produto_nome,
+    categoria,
+    unidade
+FROM
+    itens_venda
+ORDER BY    
+    categoria,
+    produto_nome;
+
+-- Consulta 2    
+SELECT
+    venda_id,
+    produto_nome,
+    valor_unitario
+FROM
+    itens_venda
+WHERE
+    categoria IN ('Legume', 'Verdura')
+    AND valor_unitario BETWEEN 3.0 AND 5.0 
+ORDER BY
+    valor_unitario DESC,
+    venda_id;  
+
+-- Consulta 3
+SELECT
+    venda_id,
+    data_venda,
+    produto_nome,
+    quantidade
+FROM
+    itens_venda
+WHERE 
+    produto_nome LIKE 'Batata%'
+ORDER BY    
+    data_venda,
+    venda_id;    
+
+-- Consulta 4  
+SELECT DISTINCT
+    venda_id,
+    data_venda,
+    bairro_entrega
+FROM
+    itens_venda
+WHERE
+    bairro_entrega IS NOT NULL    
+ORDER BY
+    venda_id;   
+    
+-- Consulta 5
+SELECT
+    venda_id,
+    produto_nome,
+    quantidade,
+    unidade,
+    valor_unitario,
+    ROUND (quantidade * valor_unitario, 2) AS valor_item
+FROM
+    itens_venda
+ORDER BY
+    valor_item DESC,
+    venda_id 
+LIMIT
+    5 OFFSET 5
+
+-- Consulta 6
+SELECT
+    venda_id,
+    data_venda,
+    COALESCE (bairro_entrega, 'Retirada no balcao') AS destino,
+    COUNT(*) AS itens,
+    SUM (quantidade * valor_unitario) AS valor_total
+FROM
+    itens_venda 
+GROUP BY
+    venda_id,
+    data_venda,
+    bairro_entrega   
+ORDER BY
+    valor_total DESC
+
+-- Consulta 7   
+SELECT
+    data_venda,
+    COUNT(DISTINCT venda_id) AS vendas,
+    COUNT(*) AS INTERSECTION,
+    SUM (quantidade * valor_unitario) AS faturamento
+FROM
+    itens_venda
+GROUP BY
+    data_venda
+ORDER BY
+    data_venda
+
+-- Consuta 8
+SELECT
+    produto_id,
+    produto_nome,
+    unidade,
+    SUM (quantidade) AS qtd_total,
+    SUM (quantidade * valor_unitario) AS faturamento,
+    AVG(valor_unitario)  AS media_simples,
+    SUM(quantidade * valor_unitario) / SUM (quantidade) AS media_ponderada
+FROM
+    itens_venda
+GROUP BY
+    produto_id,
+    produto_nome,
+    unidade 
+ORDER BY
+    faturamento DESC;
+
+-- Consulta 9
+SELECT
+    categoria,
+    unidade,
+    COUNT (quantidade) AS itens,
+    SUM (quantidade) AS qtd_total,
+    SUM (quantidade * valor_unitario) AS faturamento
+FROM
+    itens_venda
+GROUP BY
+    categoria,
+    unidade
+ORDER BY
+    categoria;
+
+-- Consulta 10
+SELECT
+    bairro_entrega,
+    COUNT(DISTINCT venda_id) AS entregas,
+    SUM (quantidade * valor_unitario) AS faturamento
+FROM
+    itens_venda
+WHERE 
+    bairro_entrega IS NOT NULL
+GROUP BY
+    bairro_entrega
+HAVING
+    SUM(quantidade * valor_unitario) > 40    
+ORDER BY
+    faturamento DESC;
+
+-- Consulta 11
+SELECT
+    venda_id,
+    ROUND(SUM(quantidade * valor_unitario),2) AS total_arredondado,
+    SUM(ROUND(quantidade * valor_unitario, 2)) AS soma_dos_itens_arredondados
+FROM
+    itens_venda
+GROUP BY
+        venda_id
+HAVING
+    ROUND(SUM(quantidade * valor_unitario), 2)
+    <>
+    SUM(ROUND(quantidade * valor_unitario, 2))    
+ORDER BY
+    venda_id;  
+
+
+
+
 
 
     
